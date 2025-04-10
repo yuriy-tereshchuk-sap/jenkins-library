@@ -108,7 +108,7 @@ func sonarExecuteScan(config sonarExecuteScanOptions, _ *telemetry.CustomData, i
 
 	sonar = sonarSettings{
 		workingDir:  "./",
-		binary:      "sonar-scanner",
+		binary:      "sonar-scanner.bat",
 		environment: []string{},
 		options:     []string{},
 	}
@@ -252,34 +252,36 @@ func runSonar(config sonarExecuteScanOptions, client piperhttp.Downloader, runne
 	}
 	// fetch number of issues by severity
 	issueService := SonarUtils.NewIssuesService(serverUrl, config.Token, taskReport.ProjectKey, config.Organization, config.BranchName, config.ChangeID, apiClient)
-	influx.sonarqube_data.fields.blocker_issues, err = issueService.GetNumberOfBlockerIssues()
+	var issues [5]SonarUtils.Severity
+	influx.sonarqube_data.fields.blocker_issues, issues[0], err = issueService.GetNumberOfBlockerIssues()
 	if err != nil {
 		return err
 	}
-	influx.sonarqube_data.fields.critical_issues, err = issueService.GetNumberOfCriticalIssues()
+	influx.sonarqube_data.fields.critical_issues, issues[1], err = issueService.GetNumberOfCriticalIssues()
 	if err != nil {
 		return err
 	}
-	influx.sonarqube_data.fields.major_issues, err = issueService.GetNumberOfMajorIssues()
+	influx.sonarqube_data.fields.major_issues, issues[2], err = issueService.GetNumberOfMajorIssues()
 	if err != nil {
 		return err
 	}
-	influx.sonarqube_data.fields.minor_issues, err = issueService.GetNumberOfMinorIssues()
+	influx.sonarqube_data.fields.minor_issues, issues[3], err = issueService.GetNumberOfMinorIssues()
 	if err != nil {
 		return err
 	}
-	influx.sonarqube_data.fields.info_issues, err = issueService.GetNumberOfInfoIssues()
+	influx.sonarqube_data.fields.info_issues, issues[4], err = issueService.GetNumberOfInfoIssues()
 	if err != nil {
 		return err
 	}
 
 	reportData := SonarUtils.ReportData{
-		ServerURL:    taskReport.ServerURL,
-		ProjectKey:   taskReport.ProjectKey,
-		TaskID:       taskReport.TaskID,
-		ChangeID:     config.ChangeID,
-		BranchName:   config.BranchName,
-		Organization: config.Organization,
+		ServerURL:       taskReport.ServerURL,
+		ProjectKey:      taskReport.ProjectKey,
+		TaskID:          taskReport.TaskID,
+		ChangeID:        config.ChangeID,
+		BranchName:      config.BranchName,
+		Organization:    config.Organization,
+		SoftwareQuality: issues[:],
 		NumberOfIssues: SonarUtils.Issues{
 			Blocker:  influx.sonarqube_data.fields.blocker_issues,
 			Critical: influx.sonarqube_data.fields.critical_issues,
@@ -287,19 +289,6 @@ func runSonar(config sonarExecuteScanOptions, client piperhttp.Downloader, runne
 			Minor:    influx.sonarqube_data.fields.minor_issues,
 			Info:     influx.sonarqube_data.fields.info_issues,
 		}}
-
-	// reportFc1 := SonarUtils.ReportData{
-	// 	ServerURL:    taskReport.ServerURL,
-	// 	ProjectKey:   taskReport.ProjectKey,
-	// 	TaskID:       taskReport.TaskID,
-	// 	ChangeID:     config.ChangeID,
-	// 	BranchName:   config.BranchName,
-	// 	Organization: config.Organization,
-	// 	Issues: IssueSearchObject.Issues[
-	// 		Type: Issue.Type,
-	// 		Severity: Issue.Severity
-	// 	]
-	// 	}
 
 	componentService := SonarUtils.NewMeasuresComponentService(serverUrl, config.Token, taskReport.ProjectKey, config.Organization, config.BranchName, config.ChangeID, apiClient)
 	cov, err := componentService.GetCoverage()
