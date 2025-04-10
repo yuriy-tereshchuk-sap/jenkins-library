@@ -108,7 +108,7 @@ func sonarExecuteScan(config sonarExecuteScanOptions, _ *telemetry.CustomData, i
 
 	sonar = sonarSettings{
 		workingDir:  "./",
-		binary:      "sonar-scanner.bat",
+		binary:      "sonar-scanner",
 		environment: []string{},
 		options:     []string{},
 	}
