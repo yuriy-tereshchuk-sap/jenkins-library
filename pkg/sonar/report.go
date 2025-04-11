@@ -10,16 +10,16 @@ const reportFileName = "sonarscan.json"
 
 // ReportData is representing the data of the step report JSON
 type ReportData struct {
-	ServerURL       string            `json:"serverUrl"`
-	ProjectKey      string            `json:"projectKey"`
-	TaskID          string            `json:"taskId"`
-	ChangeID        string            `json:"changeID,omitempty"`
-	BranchName      string            `json:"branchName,omitempty"`
-	Organization    string            `json:"organization,omitempty"`
-	NumberOfIssues  Issues            `json:"numberOfIssues"`
-	SoftwareQuality []Severity        `json:"softwareQuality"`
-	Coverage        *SonarCoverage    `json:"coverage,omitempty"`
-	LinesOfCode     *SonarLinesOfCode `json:"linesOfCode,omitempty"`
+	ServerURL      string            `json:"serverUrl"`
+	ProjectKey     string            `json:"projectKey"`
+	TaskID         string            `json:"taskId"`
+	ChangeID       string            `json:"changeID,omitempty"`
+	BranchName     string            `json:"branchName,omitempty"`
+	Organization   string            `json:"organization,omitempty"`
+	NumberOfIssues Issues            `json:"numberOfIssues"`
+	Errors         []Severity        `json:"errors"`
+	Coverage       *SonarCoverage    `json:"coverage,omitempty"`
+	LinesOfCode    *SonarLinesOfCode `json:"linesOfCode,omitempty"`
 }
 
 // Issues ...
@@ -33,7 +33,7 @@ type Issues struct {
 
 type Severity struct {
 	SeverityType string `json:"severity"`
-	IssueType    string `json:"error_type"`
+	IssueType    string `json:"error_type,omitempty"`
 	Count        int    `json:"issues"`
 }
 
