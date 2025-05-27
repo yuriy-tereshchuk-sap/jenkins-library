@@ -67,7 +67,7 @@ func (service *IssueService) getIssueCount(severity issueSeverity, categories *[
 	}
 	result, _, err := service.SearchIssues(options)
 	if err != nil {
-		return -1, errors.Wrapf(err, "failed to fetch the numer of '%s' issues", severity)
+		return -1, Severity{}, errors.Wrapf(err, "failed to fetch the numer of '%s' issues", severity)
 	}
 
 	table := map[string]int{}
@@ -90,6 +90,7 @@ func (service *IssueService) updateIssueTypesTable(issues []*sonargo.Issue, tabl
 }
 
 // GetNumberOfBlockerIssues returns the number of issue with BLOCKER severity.
+
 func (service *IssueService) GetNumberOfBlockerIssues(categories *[]Severity) (int, error) {
 	return service.getIssueCount(blocker, categories)
 }
