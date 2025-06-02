@@ -4,7 +4,10 @@
 package sonar
 
 import (
+	"cmp"
 	"net/http"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -98,13 +101,26 @@ func TestIssueService(t *testing.T) {
 		// test
 		countMajor, err := serviceUnderTest.GetNumberOfMajorIssues(&severities)
 		countMinor, err := serviceUnderTest.GetNumberOfMinorIssues(&severities)
-		// assert
-		assert.Equal(t, []Severity{
-			{SeverityType: "MAJOR", IssueType: "CODE_SMELL", IssueCount: 1},
+		// expected
+		expected_sorted := []Severity{
 			{SeverityType: "MAJOR", IssueType: "BUG", IssueCount: 1},
-			{SeverityType: "MINOR", IssueType: "CODE_SMELL", IssueCount: 1},
+			{SeverityType: "MAJOR", IssueType: "CODE_SMELL", IssueCount: 1},
 			{SeverityType: "MINOR", IssueType: "BUG", IssueCount: 1},
-		}, severities)
+			{SeverityType: "MINOR", IssueType: "CODE_SMELL", IssueCount: 1},
+		}
+		// sort data
+		slices.SortFunc(severities, func(a, b Severity) int {
+			if n := strings.Compare(a.SeverityType, b.SeverityType); n != 0 {
+				return n
+			}
+			if n := strings.Compare(a.IssueType, b.IssueType); n != 0 {
+				return n
+			}
+			// If names are equal, order by age
+			return cmp.Compare(a.IssueCount, b.IssueCount)
+		})
+		// assert
+		assert.Equal(t, expected_sorted, severities)
 		assert.NoError(t, err)
 		assert.Equal(t, 111, countMajor)
 		assert.Equal(t, 111, countMinor)
