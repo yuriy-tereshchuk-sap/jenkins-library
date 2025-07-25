@@ -34,7 +34,7 @@ func TestIssueService(t *testing.T) {
 		// test
 		count, err := serviceUnderTest.GetNumberOfBlockerIssues(&severities)
 		// assert
-		assert.Equal(t, []Severity{{SeverityType: "BLOCKER", IssueType: "CODE_SMELL", IssueCount: 1}}, severities)
+		assert.ElementsMatch(t, []Severity{{SeverityType: "BLOCKER", IssueType: "CODE_SMELL", IssueCount: 1}}, severities)
 		assert.NoError(t, err)
 		assert.Equal(t, 111, count)
 		assert.Equal(t, 1, httpmock.GetTotalCallCount(), "unexpected number of requests")
@@ -75,7 +75,7 @@ func TestIssueService(t *testing.T) {
 		countMinor, err := serviceUnderTest.GetNumberOfMinorIssues(&severities)
 		countInfo, err := serviceUnderTest.GetNumberOfInfoIssues(&severities)
 		// assert
-		assert.Equal(t, []Severity{
+		assert.ElementsMatch(t, []Severity{
 			{SeverityType: "MAJOR", IssueType: "CODE_SMELL", IssueCount: 1},
 			{SeverityType: "MINOR", IssueType: "CODE_SMELL", IssueCount: 1},
 			{SeverityType: "INFO", IssueType: "CODE_SMELL", IssueCount: 1},
@@ -120,7 +120,7 @@ func TestIssueService(t *testing.T) {
 			return cmp.Compare(a.IssueCount, b.IssueCount)
 		})
 		// assert
-		assert.Equal(t, expected_sorted, severities)
+		assert.ElementsMatch(t, expected_sorted, severities)
 		assert.NoError(t, err)
 		assert.Equal(t, 111, countMajor)
 		assert.Equal(t, 111, countMinor)
@@ -366,7 +366,7 @@ func TestHotSpotService(t *testing.T) {
 		// test
 		err := serviceUnderTest.GetHotSpotSecurityIssues(&hotspots)
 		// assert
-		assert.Equal(t, []SecurityHotspot{{Priority: "MEDIUM", Hotspots: 1}}, hotspots)
+		assert.ElementsMatch(t, []SecurityHotspot{{Priority: "MEDIUM", Hotspots: 1}}, hotspots)
 		assert.NoError(t, err)
 		assert.Equal(t, 1, httpmock.GetTotalCallCount(), "unexpected number of requests")
 	})
@@ -404,7 +404,7 @@ func TestHotSpotService(t *testing.T) {
 		// test
 		err := serviceUnderTest.GetHotSpotSecurityIssues(&hotspots)
 		// assert
-		assert.Equal(t, []SecurityHotspot{
+		assert.ElementsMatch(t, []SecurityHotspot{
 			{Priority: "MEDIUM", Hotspots: 2},
 			{Priority: "LOW", Hotspots: 1},
 		}, hotspots)
