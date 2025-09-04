@@ -4,6 +4,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -153,7 +154,6 @@ func TestRunSonar(t *testing.T) {
 	// add response handler
 	httpmock.RegisterResponder(http.MethodGet, sonarServerURL+"/api/"+SonarUtils.EndpointCeTask+"", httpmock.NewStringResponder(http.StatusOK, `{ "task": { "componentId": "AXERR2JBbm9IiM5TEST", "status": "SUCCESS" }}`))
 	httpmock.RegisterResponder(http.MethodGet, sonarServerURL+"/api/"+SonarUtils.EndpointIssuesSearch+"", httpmock.NewStringResponder(http.StatusOK, `{ "total": 0 }`))
-	httpmock.RegisterResponder(http.MethodGet, sonarServerURL+"/api/"+SonarUtils.EndpointHotSpotsSearch+"", httpmock.NewStringResponder(http.StatusOK, `{ "total": 0 }`))
 	httpmock.RegisterResponder(http.MethodGet, sonarServerURL+"/api/"+SonarUtils.EndpointMeasuresComponent+"", httpmock.NewStringResponder(http.StatusOK, measuresComponentResponse))
 
 	t.Run("default", func(t *testing.T) {
@@ -181,8 +181,15 @@ func TestRunSonar(t *testing.T) {
 		defer os.Setenv("SONAR_SCANNER_OPTS", "")
 		// test
 		err := runSonar(options, &mockDownloadClient, &mockRunner, apiClient, &mock.FilesMock{}, &sonarExecuteScanInflux{})
-		// assert
 		assert.NoError(t, err)
+		// load sonarscan report file
+		reportFile, err := os.ReadFile(filepath.Join(tmpFolder, "sonarscan.json"))
+		assert.NoError(t, err)
+		var reportData SonarUtils.ReportData
+		err = json.Unmarshal(reportFile, &reportData)
+		assert.NoError(t, err)
+		// assert
+		assert.NotNil(t, reportData.Errors)
 		assert.Contains(t, sonar.options, "-Dsonar.projectVersion=1")
 		assert.Contains(t, sonar.options, "-Dsonar.organization=SAP")
 		assert.Contains(t, sonar.environment, "SONAR_HOST_URL="+sonarServerURL)
